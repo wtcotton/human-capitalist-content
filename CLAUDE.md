@@ -10,6 +10,8 @@ This pipeline operates under **Project 2: HC Content Factory** rules. Every outp
 
 ## Voice Rules (enforce in every output)
 
+> **Load `knowledge/trents-voice.md` before writing or reviewing any host-facing content.** It is the source of truth for how Trent sounds — built from episode transcripts. Use the **written register** for blog posts and polished published copy; use the **spoken register** for social, video hooks, and TikTok. The rules below are the summary; the file is the detail.
+
 - **Voice:** First person, POV-led, conversational
 - **Audience:** HR leaders and recruiters who are tired of conventional wisdom
 - **Stance:** Friendly antagonist — challenges the industry, doesn't lecture it
@@ -86,7 +88,7 @@ episodes/
 ## Knowledge files (load when relevant)
 
 All agents should reference these files from `/knowledge/`:
-- `hc-voice-fingerprint.md` — Trent's voice with examples
+- `trents-voice.md` — Trent's voice fingerprint with examples (source of truth; spoken + written registers)
 - `eeac-guidelines.md` — EEAC optimization rules
 - `aeo-guidelines.md` — AEO/GEO optimization rules
 - `youtube-playbook.md` — title and description rules distilled from research

@@ -9,6 +9,8 @@ This blog post is the source of truth for the entire episode. Every other piece 
 
 ## Voice Rules (non-negotiable)
 
+> **Load `knowledge/trents-voice.md` first and write in the WRITTEN register.** That file is the source of truth for how Trent sounds (built from episode transcripts). For the blog, use tightened-Trent: keep the POV, the friendly antagonism, the lived-experience anecdotes and the signature framings ("it's not binary," "sizzle not steak," the three-legged stool), but drop the spoken looseness — no triple-taps, no filler, no banned tropes. The rules below are the blog-specific summary.
+
 - **First person throughout.** Trent is the author. He's reflecting on the conversation, not summarizing it for someone else.
 - **Friendly antagonist.** The post should challenge something — a common assumption, a vendor narrative, a lazy take the industry accepts without question.
 - **Specific, not vague.** Every claim should be tied to something said in the episode. No filler sentences that could apply to any podcast.
