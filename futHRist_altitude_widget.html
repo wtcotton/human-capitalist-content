@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The FutHRist Altitude Model</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:       #1C1C3A;
+    --navy-light: #252550;
+    --navy-card:  #1e1e42;
+    --chartreuse: #D4E000;
+    --pink:       #F0358A;
+    --teal:       #00B8A0;
+    --royal:      #3B4BC8;
+    --white:      #FFFFFF;
+    --gray:       #BEC8DC;
+    --font-head:  'Arial Black', 'Arial Bold', Arial, sans-serif;
+    --font-body:  'Inter', Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: var(--font-body);
+    padding: 0;
+    margin: 0;
+  }
+
+  .widget {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 56px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 14px;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .logo .hr { color: var(--pink); }
+
+  .tagline {
+    font-size: 15px;
+    color: var(--gray);
+    line-height: 1.5;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ── Altitude axis + bands ── */
+  .model {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    margin-bottom: 12px;
+  }
+
+  .axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 4px 0;
+    min-width: 52px;
+    flex-shrink: 0;
+  }
+
+  .axis-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--gray);
+    text-align: right;
+    opacity: 0.7;
+    line-height: 1;
+  }
+
+  .axis-line {
+    width: 1px;
+    flex: 1;
+    background: linear-gradient(to bottom, var(--chartreuse) 0%, var(--teal) 50%, var(--royal) 100%);
+    margin: 6px auto;
+    opacity: 0.35;
+    position: relative;
+  }
+
+  .bands {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ── Mindset band ── */
+  .band {
+    background: var(--navy-card);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .band::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 10px 0 0 10px;
+    background: var(--band-color, var(--chartreuse));
+    transition: width 0.2s;
+  }
+
+  .band:hover {
+    border-color: rgba(255,255,255,0.18);
+    transform: translateX(2px);
+  }
+
+  .band.active {
+    border-color: var(--band-color, var(--chartreuse));
+  }
+
+  .band.active::before {
+    width: 5px;
+  }
+
+  .band-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 16px 24px;
+    gap: 12px;
+  }
+
+  .band-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .band-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--band-color, var(--chartreuse));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  .band-meta {
+    min-width: 0;
+  }
+
+  .band-altitude {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--band-color, var(--chartreuse));
+    margin-bottom: 2px;
+  }
+
+  .band-title {
+    font-family: var(--font-head);
+    font-size: clamp(14px, 2.5vw, 17px);
+    font-weight: 900;
+    color: var(--white);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .band-question {
+    font-size: 12px;
+    color: var(--gray);
+    font-style: italic;
+    flex-shrink: 0;
+    display: none;
+  }
+
+  @media (min-width: 560px) {
+    .band-question { display: block; }
+  }
+
+  .band-chevron {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s, background 0.2s;
+  }
+
+  .band.active .band-chevron {
+    transform: rotate(180deg);
+    background: var(--band-color);
+    border-color: var(--band-color);
+  }
+
+  .band-chevron svg { display: block; }
+
+  /* ── Expanded panel ── */
+  .band-panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .band.active .band-panel {
+    max-height: 600px;
+  }
+
+  .band-content {
+    padding: 0 24px 24px 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: 0;
+  }
+
+  .band-content-inner {
+    padding-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  @media (min-width: 620px) {
+    .band-content-inner {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .content-block {}
+
+  .content-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--band-color);
+    margin-bottom: 8px;
+  }
+
+  .content-body {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--gray);
+  }
+
+  .content-body strong {
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  .key-question {
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid var(--band-color);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--white);
+    grid-column: 1 / -1;
+    line-height: 1.5;
+  }
+
+  /* ── Footer note ── */
+  .model-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--gray);
+    opacity: 0.6;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* ── CTA ── */
+  .cta {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 36px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .cta-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 10px;
+  }
+
+  .cta-headline {
+    font-family: var(--font-head);
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+
+  .cta-sub {
+    font-size: 14px;
+    color: var(--gray);
+    margin-bottom: 24px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.55;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    background: var(--chartreuse);
+    color: var(--navy);
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 14px 32px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: opacity 0.15s, transform 0.15s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .cta-btn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .band, .band-chevron, .band-panel, .cta-btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="eyebrow">From The Book</div>
+    <div class="logo">Fut<span class="hr">HR</span>ist</div>
+    <p class="tagline">Five mindsets. Five altitudes. One way of operating that changes everything about how HR leads.</p>
+  </div>
+
+  <!-- Altitude Model -->
+  <div class="model">
+
+    <!-- Y-axis -->
+    <div class="axis">
+      <span class="axis-label">30k ft</span>
+      <span class="axis-label">20k ft</span>
+      <span class="axis-label">15k ft</span>
+      <span class="axis-label">5k ft</span>
+      <span class="axis-label">Ground</span>
+    </div>
+
+    <!-- Bands -->
+    <div class="bands" id="bands">
+
+      <!-- 1. Architect -->
+      <div class="band" style="--band-color:#D4E000" data-index="0">
+        <div class="band-header" onclick="toggle(0)">
+          <div class="band-left">
+            <div class="band-icon">🏛</div>
+            <div class="band-meta">
+              <div class="band-altitude">30,000 ft</div>
+              <div class="band-title">The Architect</div>
+            </div>
+          </div>
+          <div class="band-question">"What are we building?"</div>
+          <div class="band-chevron">
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="band-panel">
+          <div class="band-content">
+            <div class="band-content-inner">
+              <div class="key-question">"What are we building — and is the foundation strong enough to carry the load that hasn't arrived yet?"</div>
+              <div class="content-block">
+                <div class="content-label">The mindset</div>
+                <div class="content-body">The Architect sees the organization as an interconnected system. Decisions in one area create consequences everywhere. They design for future loads — not just the next reorg or budget cycle — building <strong>adaptive, modular structures</strong> designed to absorb change.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The work</div>
+                <div class="content-body">Identifying the <strong>load-bearing walls</strong> of the organization. Designing structure that doesn't just survive today but scales tomorrow. Solving for structural integrity before the stress arrives.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The failure mode</div>
+                <div class="content-body">Most HR leaders never climb this high. They're solving problems that already exist instead of designing systems that prevent the next generation of problems from forming.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The signal you're here</div>
+                <div class="content-body">You're thinking about <strong>org design, workforce architecture, and future capability</strong> — not just filling the req in front of you.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Engineer -->
+      <div class="band" style="--band-color:#00B8A0" data-index="1">
+        <div class="band-header" onclick="toggle(1)">
+          <div class="band-left">
+            <div class="band-icon">⚙️</div>
+            <div class="band-meta">
+              <div class="band-altitude">20,000 ft</div>
+              <div class="band-title">The Engineer</div>
+            </div>
+          </div>
+          <div class="band-question">"Where is it breaking?"</div>
+          <div class="band-chevron">
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="band-panel">
+          <div class="band-content">
+            <div class="band-content-inner">
+              <div class="key-question">"Where are the seams — and what's accumulating in the gaps that nobody owns?"</div>
+              <div class="content-block">
+                <div class="content-label">The mindset</div>
+                <div class="content-body">The Engineer focuses on <strong>seams and handoffs</strong> — the spaces between steps where ownership blurs and systemic failures accumulate quietly. They use tools like the 5 Whys to trace performance issues to their roots.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The work</div>
+                <div class="content-body">Instrumenting handoffs with <strong>signals and routines</strong>. Building early warning systems. Moving from reactive firefighting to resilient workflows that don't rely on heroics.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The failure mode</div>
+                <div class="content-body">Treating every breakdown as an isolated event instead of a symptom of a systemic gap. The same failure keeps happening because no one traced it to its root.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The signal you're here</div>
+                <div class="content-body">You're asking <strong>"why does this keep happening"</strong> instead of just fixing it again and moving on.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Scientist -->
+      <div class="band" style="--band-color:#3B4BC8" data-index="2">
+        <div class="band-header" onclick="toggle(2)">
+          <div class="band-left">
+            <div class="band-icon">🔬</div>
+            <div class="band-meta">
+              <div class="band-altitude">15,000 ft</div>
+              <div class="band-title">The Scientist</div>
+            </div>
+          </div>
+          <div class="band-question">"Why is that actually true?"</div>
+          <div class="band-chevron">
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="band-panel">
+          <div class="band-content">
+            <div class="band-content-inner">
+              <div class="key-question">"Is this metric actually measuring what we think it's measuring — or are we getting faster at the wrong thing?"</div>
+              <div class="content-block">
+                <div class="content-label">The mindset</div>
+                <div class="content-body">The Scientist moves beyond reporting on activity to explaining <strong>why</strong> through causal inquiry and hypothesis testing. They challenge institutional intuition with evidence — and they're not afraid of what the data reveals.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The work</div>
+                <div class="content-body">Defining the <strong>real business problem</strong> rather than accepting the symptom. Piloting solutions to generate rapid learning. Measuring actual impact on outcomes — not activity or effort.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The failure mode</div>
+                <div class="content-body">Measuring what's easy to measure instead of what actually matters. Running programs that feel productive but have no traceable line to business outcomes.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The signal you're here</div>
+                <div class="content-body">You're asking <strong>"does this actually work"</strong> — and you're willing to kill the program if the answer is no.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. COO -->
+      <div class="band" style="--band-color:#F0358A" data-index="3">
+        <div class="band-header" onclick="toggle(3)">
+          <div class="band-left">
+            <div class="band-icon">📊</div>
+            <div class="band-meta">
+              <div class="band-altitude">5,000 ft</div>
+              <div class="band-title">The COO</div>
+            </div>
+          </div>
+          <div class="band-question">"Where should effort go?"</div>
+          <div class="band-chevron">
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="band-panel">
+          <div class="band-content">
+            <div class="band-content-inner">
+              <div class="key-question">"Where is human capital deployed right now — and is that actually where it creates the most value?"</div>
+              <div class="content-block">
+                <div class="content-label">The mindset</div>
+                <div class="content-body">The COO maps how value is <strong>created, protected, and destroyed</strong> across the enterprise. They treat every workflow as a deliberate deployment choice — and they identify where talent is being burned on low-return work.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The work</div>
+                <div class="content-body">Using the <strong>Value of Work Matrix</strong> to shift attention from the Danger Zone (high focus, low value) to the Protect quadrant (high focus, high value). Removing friction. Accelerating how value moves through the organization.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The failure mode</div>
+                <div class="content-body">Treating all work as equally urgent. Allowing capable people to spend 60% of their time on work that produces no strategic return — and calling it "being busy."</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The signal you're here</div>
+                <div class="content-body">You're asking <strong>"is this the highest-value use of this person's time"</strong> — not just "is this getting done."</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Coach -->
+      <div class="band" style="--band-color:#BEC8DC" data-index="4">
+        <div class="band-header" onclick="toggle(4)">
+          <div class="band-left">
+            <div class="band-icon">🎯</div>
+            <div class="band-meta">
+              <div class="band-altitude">Ground level</div>
+              <div class="band-title">The Coach</div>
+            </div>
+          </div>
+          <div class="band-question">"Who needs to change, and how?"</div>
+          <div class="band-chevron">
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="band-panel">
+          <div class="band-content">
+            <div class="band-content-inner">
+              <div class="key-question">"What specific behavior is driving this outcome — and what does that person need to see to change it?"</div>
+              <div class="content-block">
+                <div class="content-label">The mindset</div>
+                <div class="content-body">The Coach is <strong>performance-driven, not support-driven</strong>. They treat culture as a measurable system, not an abstract virtue. They come to every coaching conversation with evidence — not just empathy.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The work</div>
+                <div class="content-body"><strong>Behavior-to-Outcome Mapping</strong>: connecting specific leadership actions directly to business results. Identifying performance-sapping team patterns. Practicing talent arbitrage — surfacing under-recognized potential before it walks out the door.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The failure mode</div>
+                <div class="content-body">Calling active listening "coaching." Running development programs with no measurable outcome. Delivering feedback so carefully cushioned that nothing actually changes.</div>
+              </div>
+              <div class="content-block">
+                <div class="content-label">The signal you're here</div>
+                <div class="content-body">You're walking into a coaching conversation with <strong>data, a specific behavior, and a measurable outcome</strong> you're holding the leader accountable to.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /bands -->
+  </div><!-- /model -->
+
+  <p class="model-note">The FutHRist doesn't live at one altitude. They shift based on where the work demands them — often in the same week.</p>
+
+  <!-- CTA -->
+  <div class="cta">
+    <div class="cta-eyebrow">Ready to go deeper?</div>
+    <div class="cta-headline">Get the full framework in<br><span style="color:var(--pink)">The Fut<span style="color:var(--pink)">HR</span>ist</span></div>
+    <p class="cta-sub">Five mindsets. Real business problems. The operating model for the next generation of HR leadership.</p>
+    <a class="cta-btn" href="https://trentcotton.com" target="_blank" rel="noopener">Get the Book</a>
+  </div>
+
+</div><!-- /widget -->
+
+<script>
+  function toggle(index) {
+    var bands = document.querySelectorAll('.band');
+    bands.forEach(function(band, i) {
+      if (i === index) {
+        band.classList.toggle('active');
+      } else {
+        band.classList.remove('active');
+      }
+    });
+  }
+</script>
+</body>
+</html>
